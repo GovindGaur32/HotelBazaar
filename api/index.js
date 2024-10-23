@@ -14,7 +14,7 @@ const imageDownloader = require('image-downloader');
 const fs = require('fs')
 
 const bcryptSalt= bcrypt.genSaltSync(10);
-const jwtSecret = 'vguhjhgsrttf2554gh78vhg5fxvb8gdftxb3'
+const jwtSecret = 'hhhhhh'
 
 app.use(express.json());
 app.use(cookieParser());
