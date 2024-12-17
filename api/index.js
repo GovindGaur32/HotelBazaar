@@ -13,8 +13,7 @@ const multer = require('multer');
 const imageDownloader = require('image-downloader');
 const fs = require('fs')
 
-const bcryptSalt= bcrypt.genSaltSync(10);
-const jwtSecret =process.env.JWTSECRET
+const bcryptSalt = bcrypt.genSaltSync(10);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -22,7 +21,7 @@ app.use('/uploads', express.static('uploads'));
 
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Adjust this to your frontend's URL
+    origin: process.env.FrontendURL, // Adjust this to your frontend's URL
     credentials: true // Allow credentials (like cookies)
 }));
 
@@ -32,7 +31,7 @@ mongoose.connect(process.env.MONGO_URL);
 
 function getUserDataFromReq(req) {
   return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(req.cookies.token, process.env.JWTSECRET, {}, async (err, userData) => {
       if (err) throw err;
       resolve(userData);
     });
@@ -72,7 +71,7 @@ app.post('/api/login', async (req,res) => {
           email:userDoc.email,
           id:userDoc._id
          
-        }, jwtSecret, {}, (err,token) => {
+        }, process.env.JWTSECRET, {}, (err,token) => {
           if (err) throw err;
           res.cookie('token', token).json(userDoc);
         });
@@ -90,7 +89,7 @@ app.post('/api/login', async (req,res) => {
     const {token} = req.cookies;
 
     if(token){
-      jwt.verify(token, jwtSecret,{}, async (err, userData)=>{
+      jwt.verify(token, process.env.JWTSECRET,{}, async (err, userData)=>{
         if(err) throw err;
         const {name, email, _id} = await User.findById(userData.id)
         res.json({name, email,_id});
@@ -139,7 +138,7 @@ app.post('/api/upload', photosMiddleware.array('photos', 100), (req, res) => {
       title,address,addedPhotos,description,price,
       perks,extraInfo,checkIn,checkOut,maxGuests,
     } = req.body;
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, process.env.JWTSECRET, {}, async (err, userData) => {
       if (err) throw err;
       const placeDoc = await Place.create({
         owner:userData.id,price,
@@ -154,7 +153,7 @@ app.post('/api/upload', photosMiddleware.array('photos', 100), (req, res) => {
   app.get('/api/user-places', (req,res) => {
     mongoose.connect(process.env.MONGO_URL);
     const {token} = req.cookies;
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, process.env.JWTSECRET, {}, async (err, userData) => {
       const {id} = userData;
       res.json( await Place.find({owner:id}) );
     });
@@ -173,7 +172,7 @@ app.post('/api/upload', photosMiddleware.array('photos', 100), (req, res) => {
       id, title,address,addedPhotos,description,
       perks,extraInfo,checkIn,checkOut,maxGuests,price,
     } = req.body;
-    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    jwt.verify(token, process.env.JWTSECRET, {}, async (err, userData) => {
       if (err) throw err;
       const placeDoc = await Place.findById(id);
       if (userData.id === placeDoc.owner.toString()) {
